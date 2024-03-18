@@ -1,0 +1,28 @@
+{
+  "description": "TODO",
+  "manifest_version": 2,
+  "name": "Behind the Curtain",
+  "version": "1.0",
+  "homepage_url": "https://github.com/DAMcraft/BehindTheCurtain",
+  "icons": {
+    "48": "icons/unproxied.png"
+  },
+  "permissions": [
+    "activeTab",
+    "*://*/*",
+    "<all_urls>",
+    "dns",
+    "storage",
+    "webRequest",
+    "webRequestBlocking",
+    "tabs"
+  ],
+  "browser_action": {
+    "default_icon": "icons/unproxied.png",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  }
+}

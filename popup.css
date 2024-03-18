@@ -1,0 +1,131 @@
+:root {
+    color-scheme: light dark;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    width: 350px;
+}
+
+a {
+    color: #0089ea;
+    text-decoration: none;
+}
+
+svg {
+    width: 100px;
+    margin-right: 10px;
+}
+
+#cfProxyInfo {
+    display: flex;
+    /* Center the content */
+    align-items: center;
+}
+
+label {
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="submit"] {
+    padding: 5px 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+#info {
+    margin-top: 20px;
+}
+
+#info span {
+    display: block;
+    margin-bottom: 5px;
+}
+#ip {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 20px; /* Increased font size */
+    border-radius: 3px; /* Added border-radius for rounded corners */
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+#shodanLogo {
+    vertical-align: middle;
+    margin-left: 5px;
+}
+
+details {
+    margin-top: 20px;
+}
+
+details summary {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+details summary:hover {
+    color: light-dark(#484848, #b6b6b6);
+}
+
+#ports div:nth-child(odd) {
+    background-color: light-dark(#f2f2f2, #373541);
+}
+
+details table th,
+details table td {
+    padding: 8px;
+    text-align: left;
+}
+
+details table th {
+    background-color: #ddd;
+}
+
+details table th:first-child,
+details table td:first-child {
+    border-top-left-radius: 5px;
+}
+
+details table th:last-child,
+details table td:last-child {
+    border-top-right-radius: 5px;
+}
+
+details a {
+    display: inline-block;
+    margin-top: 5px;
+}
+
+ul {
+    margin-top: 0;
+    padding: 0 15px;
+}
+li {
+    padding: 0;
+    margin: 0;
+}
+
+.port {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 5px;
+    padding-right: 5px;
+    border-radius: 5px;
+}
+.port a {
+    margin-bottom: 5px;
+}
