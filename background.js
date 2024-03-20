@@ -146,6 +146,7 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
                 let doc = parser.parseFromString(table[0], 'text/html');
                 let rows = doc.querySelectorAll('tr');
                 /* The second element of the row is the record type, check if it's an A / AAAA record */
+                let unproxied = []
                 for (let row of rows) {
                     // Add a cell at the beginning of the row
                     row.insertCell(0);
@@ -173,11 +174,43 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
                                     d="M74.5,39c-2.08,0-15.43-.13-28.34-.25-12.62-.12-25.68-.25-27.66-.25a8,8,0,0,1-1-15.93c0-.19,0-.38,0-.57a9.49,9.49,0,0,1,14.9-7.81,19.48,19.48,0,0,1,38.05,4.63A10.5,10.5,0,1,1,74.5,39Z"/>
                             </svg>
                         `
+                        if (!is_cf) {
+                            unproxied.push(row.children[1].innerText);
+                        }
                     }
                 }
                 // Update the table with the new cell
                 let newTable = doc.querySelector('table').outerHTML;
                 browser.tabs.executeScript(tabId, {code: `document.querySelector("#domain > :first-child > :first-child > table").outerHTML = ${JSON.stringify(newTable)}`}).then(() => {});
+
+                // Add a new div with the unproxied domains
+                browser.tabs.executeScript(tabId, {code: 'document.querySelector("#domain > :first-child > :nth-child(2)").outerHTML'}).then(div => {
+                    if (!div[0]) {
+                        return;
+                    }
+                    let parser = new DOMParser();
+                    let doc = parser.parseFromString(div[0], 'text/html');
+                    // Get nth-child(2) of the first child of the div
+                    let newElement = doc.createElement('div');
+                    newElement.innerHTML = `
+                        <div class="card card-padding card-orange">
+                            <div class="card-header">
+                                <h1>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="10 0 76 39.5" style="vertical-align: middle" width="20" height="20">
+                                        <path id="cfLogoPath" fill="currentColor"
+                                            d="M74.5,39c-2.08,0-15.43-.13-28.34-.25-12.62-.12-25.68-.25-27.66-.25a8,8,0,0,1-1-15.93c0-.19,0-.38,0-.57a9.49,9.49,0,0,1,14.9-7.81,19.48,19.48,0,0,1,38.05,4.63A10.5,10.5,0,1,1,74.5,39Z"/>
+                                    </svg>
+                                    <em>Unproxied</em>domains
+                                </h1>
+                            </div>
+                            <ul style="list-style-position: inside; list-style-type: circle;">
+                                ${unproxied.map(domain => `<li style="display: list-item; list-style-type: disc;">${domain}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                    doc.body.getElementsByTagName('div')[0].appendChild(newElement);
+                    browser.tabs.executeScript(tabId, {code: `document.querySelector("#domain > :first-child > :nth-child(2)").outerHTML = ${JSON.stringify(doc.body.innerHTML)}`}).then(() => {});
+                });
             }).catch(() => {});
         }).catch(() => {});
     }
