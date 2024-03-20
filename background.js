@@ -120,11 +120,72 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
             setData(dnsInfo, new URL(tab.url).hostname, tabId);
         });
     });
-})
+    if (new RegExp('https?://(www\\.)?shodan\\.io/domain/.*').test(tab.url)) {
+        // Check if the extension is already editing the table
+        browser.tabs.executeScript(tabId, {code: 'document.getElementById("btc-updating")'}).then(el => {
+            if (el[0]) {
+                return;
+            }
+
+            // Add some kind of info that the extension is already editing the table
+            browser.tabs.executeScript(tabId, {code: `(function() {
+                let el = document.createElement('div');
+                el.id = 'btc-updating';
+                el.hidden = true;
+                document.body.appendChild(el);
+                return undefined;
+            })()`}).then(() => {});
+
+            /* get the table by running document.querySelector('#domain > :first-child > :first-child > table') IN the tab */
+            browser.tabs.executeScript(tabId, {code: 'document.querySelector("#domain > :first-child > :first-child > table").outerHTML'}).then(async table => {
+                if (!table[0]) {
+                    return;
+                }
+                /* parse the table */
+                let parser = new DOMParser();
+                let doc = parser.parseFromString(table[0], 'text/html');
+                let rows = doc.querySelectorAll('tr');
+                /* The second element of the row is the record type, check if it's an A / AAAA record */
+                for (let row of rows) {
+                    // Add a cell at the beginning of the row
+                    row.insertCell(0);
+                    row.children[0].style.paddingRight = '10px';
+                    row.children[0].style.paddingLeft = '10px';
+                    row.children[0].width = '20';
+                    row.children[1].style.paddingLeft = '0';
+                    if (row.children[2].innerText === 'A' || row.children[2].innerText === 'AAAA') {
+                        // ip: row.children[3].innerText -> first child -> first child -> text
+                        let ip = row.children[3].children[0].children[0].innerText;
+                        /* check if it's cloudflare */
+                        let is_cf = await isCloudflareIP(ip)
+                        // Change the text of the cell to the cloudflare status
+                        row.children[0].innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="10 0 76 39.5" width="20" height="20" style="vertical-align: middle;">
+                                <style>
+                                    .logoUnproxied {
+                                        fill: #92979b;
+                                    }
+                                    .logoProxied {
+                                        fill: #f38020;
+                                    }
+                                </style>
+                                <path id="cfLogoPath" class="${is_cf ? 'logoProxied' : 'logoUnproxied'}" 
+                                    d="M74.5,39c-2.08,0-15.43-.13-28.34-.25-12.62-.12-25.68-.25-27.66-.25a8,8,0,0,1-1-15.93c0-.19,0-.38,0-.57a9.49,9.49,0,0,1,14.9-7.81,19.48,19.48,0,0,1,38.05,4.63A10.5,10.5,0,1,1,74.5,39Z"/>
+                            </svg>
+                        `
+                    }
+                }
+                // Update the table with the new cell
+                let newTable = doc.querySelector('table').outerHTML;
+                browser.tabs.executeScript(tabId, {code: `document.querySelector("#domain > :first-child > :first-child > table").outerHTML = ${JSON.stringify(newTable)}`}).then(() => {});
+            }).catch(() => {});
+        }).catch(() => {});
+    }
+});
 
 
 function setData(dnsInfo, hostname, tabId) {
-    let isCloudflare = isCloudflareIP(dnsInfo.addresses[0]).then(isCloudflare => {
+    isCloudflareIP(dnsInfo.addresses[0]).then(isCloudflare => {
         /* if it's cloudflare, change the icon of the extension */
         if (isCloudflare) {
             browser.browserAction.setIcon({tabId: tabId, path: "icons/proxied.png"});
