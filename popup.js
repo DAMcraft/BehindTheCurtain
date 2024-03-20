@@ -108,7 +108,7 @@ function setIpData(isCloudflare, ip, tab) {
                 data[key] = value;
             }
             document.getElementById('cfInfo').innerHTML =
-                `Connected to Cloudflare ${data.loc}, ${capitalizeFirstLetter(data.colo)}<br>(${data.ip})`;
+                `Connected to Cloudflare ${data.loc}, ${capitalizeFirstLetter(data.colo)}<br>(${ip})`;
         });
         return;
     }
@@ -273,27 +273,34 @@ browser.tabs.query({active: true, currentWindow: true}).then((tabs) => {
         let data = hostData.hostData[new URL(tab.url).hostname];
         if (data !== undefined) {
             setIpData(data.isCloudflare, data.ip, tab);
-        } else {
-            browser.dns.resolve(
-                new URL(tab.url).hostname,
-                ["disable_ipv6"]
-            ).then((resolve) => {
-                isCloudflareIP(resolve.addresses[0]).then((isCloudflare) => {
-                    setIpData(isCloudflare, resolve.addresses[0], tab);
-                });
-            }).catch((error) => {
-                // use ipv6
-                browser.dns.resolve(
-                    new URL(tab.url).hostname
-                ).then((resolve) => {
-                    isCloudflareIP(resolve.addresses[0]).then((isCloudflare) => {
-                        setIpData(isCloudflare, resolve.addresses[0], tab);
+            return
+        }
+
+        browser.dns.resolve(new URL(tab.url).hostname).then(dnsInfo1 => {
+            isCloudflareIP(dnsInfo1.addresses[0]).then(isCloudflare => {
+                if (isCloudflare) {
+                    setIpData(isCloudflare, dnsInfo1.addresses[0], tab);
+                    return;
+                }
+
+                // If not cloudflare and it's an IPv6, try to get the IPv4 address only
+                // Return if it's an IPv4 address
+                if (!dnsInfo1.addresses[0].includes(':')) {
+                    setIpData(isCloudflare, dnsInfo1.addresses[0], tab);
+                    return;
+                }
+
+                // Try to get the IPv4 address
+                browser.dns.resolve(new URL(tab.url).hostname, ["disable_ipv6"]).then(dnsInfo2 => {
+                    setIpData(isCloudflare, dnsInfo2.addresses[0], tab);
+                }).catch(() => {
+                    // if the IPv4 resolution fails, use the IPv6 address
+                    browser.dns.resolve(new URL(tab.url).hostname).then(dnsInfo3 => {
+                        setIpData(isCloudflare, dnsInfo1.addresses[0], tab);
                     });
-                }).catch((error) => {
-                    console.log(error);
                 });
             });
-        }
+        })
     });
 });
 

@@ -2,7 +2,7 @@
   "description": "A Firefox extension supposed to help you find the backend of a website proxied by Cloudflare.",
   "manifest_version": 2,
   "name": "Behind the Curtain",
-  "version": "1.0",
+  "version": "1.1",
   "homepage_url": "https://github.com/DAMcraft/BehindTheCurtain",
   "icons": {
     "48": "icons/unproxied.png"
