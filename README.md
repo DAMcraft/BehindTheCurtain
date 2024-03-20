@@ -5,7 +5,8 @@ Also allows you to gather a lot more information about the website, like queryin
 On top of that, it also allows you to spoof the `Host` header of the request, which can be useful for pretending to 
 use a different domain, for example when bypassing some Cloudflare protections.
 
-
+## Download:
+https://addons.mozilla.org/de/firefox/addon/behind-the-curtain/
 
 ## Credits:
 #### The logo
