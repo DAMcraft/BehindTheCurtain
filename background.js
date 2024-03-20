@@ -153,6 +153,7 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
                     row.children[0].style.paddingRight = '10px';
                     row.children[0].style.paddingLeft = '10px';
                     row.children[0].width = '20';
+                    let domain = row.children[1].innerText;
                     row.children[1].style.paddingLeft = '0';
                     if (row.children[2].innerText === 'A' || row.children[2].innerText === 'AAAA') {
                         // ip: row.children[3].innerText -> first child -> first child -> text
@@ -174,8 +175,8 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
                                     d="M74.5,39c-2.08,0-15.43-.13-28.34-.25-12.62-.12-25.68-.25-27.66-.25a8,8,0,0,1-1-15.93c0-.19,0-.38,0-.57a9.49,9.49,0,0,1,14.9-7.81,19.48,19.48,0,0,1,38.05,4.63A10.5,10.5,0,1,1,74.5,39Z"/>
                             </svg>
                         `
-                        if (!is_cf) {
-                            unproxied.push(row.children[1].innerText);
+                        if (!is_cf && domain !== '*' && unproxied.indexOf(domain) === -1 && domain !== '') {
+                            unproxied.push(domain);
                         }
                     }
                 }
